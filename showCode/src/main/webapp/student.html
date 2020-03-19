@@ -90,6 +90,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-language_tools.js" type="text/javascript"
         charset="utf-8"></script>
 <script type="text/javascript" src="https://cdn.goeasy.io/goeasy-1.0.3.js"></script>
+<script type="text/javascript" src="js/myWebSocet.js"></script>
+
 <script>
     var app = new Vue({
         el: "#app",
@@ -106,7 +108,7 @@
                     this.$editor.setOptions({
                         enableBasicAutocompletion: true,
                         enableSnippets: true,
-                        enableLiveAutocompletion: false
+                        enableLiveAutocompletion: true
                     });
                 this.$editor.setTheme("ace/theme/twilight");
                 this.$editor.session.setMode("ace/mode/java");
@@ -123,51 +125,25 @@
                     return ChannelName;
                 };
 
-                Vue.prototype.$websocket = new WebSocket("ws://120.27.192.235:8080/showCode/websocket");
-
-                this.$websocket.onerror = function () {
-                    alert("WebSocket连接错误");
-                }
-
-                this.$websocket.onopen = function () {
-                    console.log("WebSocket连接成功");
-                    console.log("teacherChannel"+Vue.prototype.$channelName+"-subscribe");
-                    Vue.prototype.$websocket.send("teacherChannel"+Vue.prototype.$channelName+"-subscribe");
-                    console.log("studentState");
-                    Vue.prototype.$websocket.send("studentState");
-                }
-
-                this.$websocket.onmessage = function (event) {
+                websock.onmessage = function (event) {
                     console.log(event.data);
-                    if (event.data.split("-")[0] == "teacherChannel"+Vue.prototype.$channelName) {
+                    if (event.data.split("-")[0] == "teacherChannel" + Vue.prototype.$channelName) {
                         console.log(event.data);
                         Vue.prototype.$editor.setValue(event.data.split("-")[1]);
                         Vue.prototype.$editor.getSession().selection.clearSelection();
-                        Vue.prototype.$websocket.send("studentResp" + Vue.prototype.$channelName+"-模板代码同步完成")
+                       publish("studentResp" + Vue.prototype.$channelName + "-模板代码同步完成")
                     }
                 }
-
-                this.$websocket.onclose = function () {
-                    alert("WebSocket连接关闭");
-                }
-
-                window.onbeforeunload = function () {
-                    closeWebSocket();
-                }
-
-                function closeWebSocket() {
-                    Vue.prototype.$websocket.close();
-                }
-
+                
                 function myCallback() {
                     var code = Vue.prototype.$editor.getValue();
                     console.log("curCode:" + code)
                     var message = JSON.stringify({
-                            code:code,
-                            cursor:Vue.prototype.$editor.getCursorPosition(),
+                        code: code,
+                        cursor: Vue.prototype.$editor.getCursorPosition(),
                     });
                     console.log(message);
-                    Vue.prototype.$websocket.send("studentChannel"+Vue.prototype.$channelName+"-"+message);
+                    publish("studentChannel" + Vue.prototype.$channelName + "-" + message);
                 };
 
                 this.$editor.getSession().on('change', myCallback);

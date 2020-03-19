@@ -104,6 +104,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-language_tools.js" type="text/javascript"
         charset="utf-8"></script>
 <script type="text/javascript" src="https://cdn.goeasy.io/goeasy-1.0.3.js"></script>
+<script type="text/javascript" src="js/myWebSocet.js"></script>
 
 <script>
 
@@ -137,22 +138,8 @@
                 document.getElementById('editor').style.fontSize = '30px';
                 this.$editor.setValue("// 请编写代码");
                 this.$editor.getSession().selection.clearSelection();
-
-                Vue.prototype.$websocket = new WebSocket("ws://120.27.192.235:8080/showCode/websocket");
-
-                this.$websocket.onerror = function () {
-                    alert("WebSocket连接错误");
-                };
-
-                this.$websocket.onopen = function () {
-                    console.log("WebSocket连接成功");
-                    console.log("studentChannel" + Vue.prototype.$channelName + "-subscribe");
-                    Vue.prototype.$websocket.send("studentChannel" + Vue.prototype.$channelName + "-subscribe");
-                    console.log("studentResp" + Vue.prototype.$channelName + "-subscribe");
-                    Vue.prototype.$websocket.send("studentResp" + Vue.prototype.$channelName+ "-subscribe");
-                };
-
-                this.$websocket.onmessage = function (event) {
+                
+                websock.onmessage = function (event) {
                     console.log(event.data);
                     if (event.data.split(Vue.prototype.$channelName+"-")[0] == "studentChannel") {
                         console.log(event.data);
@@ -168,20 +155,6 @@
                         console.log(event.data);
                         app.sendCode = event.data.split(Vue.prototype.$channelName+"-")[1];
                     }
-
-                };
-
-                this.$websocket.onclose = function () {
-                    alert("WebSocket连接关闭");
-                };
-
-                window.onbeforeunload = function () {
-                    closeWebSocket();
-                };
-
-
-                function closeWebSocket() {
-                    Vue.prototype.$websocket.close();
                 }
 
                 // 加载本地配置
@@ -195,12 +168,12 @@
                 var code = this.$editor.getValue();
                 var channel1 = "teacherChannel" + Vue.prototype.$channelName;
                 console.log(channel1+"-" + code);
-                Vue.prototype.$websocket.send(channel1 + "-" + code);
+                publish(channel1 + "-" + code);
             },
 
             getStuState() {
                 console.log("getStudentState");
-                Vue.prototype.$websocket.send("getStudentState");
+                publish("getStudentState");
             },
 
             changeLanguage() {

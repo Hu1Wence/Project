@@ -40,6 +40,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript" src="https://cdn.goeasy.io/goeasy-1.0.3.js"></script>
 <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+<script type="text/javascript" src="js/myWebSocet.js"></script>
+
 <script>
     var app = new Vue({
         el:"#app",
@@ -49,42 +51,15 @@
 
         methods:{
             init() {
-
                 Vue.prototype.$channelName = new Date().getTime();
-
-                Vue.prototype.$websocket = new WebSocket("ws://120.27.192.235:8080/showCode/websocket");
-
-                this.$websocket.onerror = function () {
-                    alert("WebSocket连接错误");
-                }
-
-                this.$websocket.onopen = function () {
-                    console.log("WebSocket连接成功");
-                }
-
-
-                this.$websocket.onclose = function () {
-                    alert("WebSocket连接关闭");
-                }
-
-                window.onbeforeunload = function () {
-                    closeWebSocket();
-                }
-
-                function closeWebSocket() {
-                    websocket.close();
-                }
-
-    
             },
 
 
             publishtoTeacher() {
                 if(this.myKey == "A" || this.myKey == "B" || this.myKey == "C" ||this.myKey == "D"
                 ) {
-                    Vue.prototype.$websocket.send("answer-"+this.myKey);
+                    publish("answer-"+this.myKey);
                     alert("提交成功!")
-                    console.log(Vue.prototype.$channelName+":"+this.myKey);
                 } else {
                     alert("请规范作答!")
                 }
