@@ -26,14 +26,22 @@ public class WebSocketTest {
     //上线的学生端集合
     private static ArrayList<WebSocketTest> OnLineStu = new ArrayList<WebSocketTest>();
 
+    //历史消息集合
+    private static ConcurrentHashMap<String, Queue<String>> historyMsg = new ConcurrentHashMap<String, Queue<String>>();
 
-    ConsumeMessage consumeMessage =  new ConsumeMessage(messageQueue, subscribes);
+
+    ConsumeMessage consumeMessage = new ConsumeMessage(messageQueue, subscribes);
     Thread thread1 = new Thread(consumeMessage);
+
 
     public Session session;
 
     @OnOpen
     public void onOpen(Session session) {
+
+        Thread thread2 = new Thread(new HsyMessage(historyMsg));
+        thread2.start();
+
         thread1.start();
         this.session = session;
         System.out.println(this);
@@ -67,6 +75,19 @@ public class WebSocketTest {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else if(message.split("-")[0].equals("HistoryMsg")){
+            //获得历史消息
+            if (historyMsg.containsKey(message.split("-")[1]) && historyMsg.get(message.split("-")[1]).size() > 0) {
+                for (String s : historyMsg.get(message.split("-")[1])) {
+                    if (Long.parseLong(message.split("-")[2]) >= Long.parseLong(s.split("-")[0])) {
+                        try {
+                            this.session.getBasicRemote().sendText("HsyMsg-"+ s.split("-")[1]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
         } else if (message.split("-")[1].equals("subscribe")) {
             //message的 type 是"channel:消息"或者"channel:subscribe";
             //如果消息带subscribe代表为接收端
@@ -87,6 +108,14 @@ public class WebSocketTest {
                 Queue<String> queue = new LinkedList<String>();
                 queue.offer(message.split("-")[1]);
                 messageQueue.put(message.split("-")[0], queue);
+            }
+
+            if (historyMsg.containsKey(message.split("-")[0])) {
+                historyMsg.get(message.split("-")[0]).offer(new Date().getTime() + "-" + message.split("-")[1]);
+            } else {
+                Queue<String> queue = new LinkedList<String>();
+                queue.offer(new Date().getTime() + "-" + message.split("-")[1]);
+                historyMsg.put(message.split("-")[0], queue);
             }
         }
     }

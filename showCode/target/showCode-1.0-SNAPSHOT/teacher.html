@@ -167,7 +167,6 @@
                 this.sendCode = "代码同步中...";
                 var code = this.$editor.getValue();
                 var channel1 = "teacherChannel" + Vue.prototype.$channelName;
-                console.log(channel1+"-" + code);
                 publish(channel1 + "-" + code);
             },
 
