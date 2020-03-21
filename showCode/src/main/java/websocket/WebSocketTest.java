@@ -23,7 +23,7 @@ public class WebSocketTest {
     //订阅者集合
     private static ConcurrentHashMap<String, ArrayList<WebSocketTest>> subscribes = new ConcurrentHashMap<String, ArrayList<WebSocketTest>>();
 
-//    //上线的学生端集合
+    //上线的学生端集合
     private static ArrayList<WebSocketTest> OnLineStu = new ArrayList<WebSocketTest>();
 
 
